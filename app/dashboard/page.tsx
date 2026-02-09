@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, MessageSquare, Edit2, Trash2, LayoutDashboard, Settings, LogOut, Loader2 } from "lucide-react";
+import {
+  User,
+  MessageSquare,
+  Edit2,
+  Trash2,
+  LayoutDashboard,
+  Settings,
+  LogOut,
+  Loader2,
+  MoreHorizontal,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import logOut from "./logout";
@@ -11,8 +22,8 @@ export default function DashboardPage() {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Initialize Supabase only in the browser
   useEffect(() => {
     const supabaseClient = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,7 +32,6 @@ export default function DashboardPage() {
     setSupabase(supabaseClient);
   }, []);
 
-  // Fetch data once Supabase is ready
   useEffect(() => {
     if (supabase) fetchData();
   }, [supabase]);
@@ -58,9 +68,29 @@ export default function DashboardPage() {
   if (!supabase) return <div className="text-white p-10">Loading dashboard...</div>;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex">
-      {/* SIDEBAR */}
-      <aside className="hidden md:flex w-64 bg-zinc-900 border-r border-white/5 flex-col p-6 sticky top-0 h-screen">
+    <div className="min-h-screen bg-zinc-950 text-white flex relative">
+      {/* --- MOBILE SIDEBAR TOGGLE --- */}
+      <div className="md:hidden absolute top-4 left-4 z-50">
+        <button
+          onClick={() => setMobileSidebarOpen(true)}
+          className="p-2 text-white bg-zinc-800 rounded"
+        >
+          <MoreHorizontal size={24} />
+        </button>
+      </div>
+
+      {/* --- SIDEBAR --- */}
+      <aside
+        className={`fixed md:static top-0 left-0 w-64 bg-zinc-900 border-r border-white/5 flex-col p-6 h-full z-40 transform transition-transform duration-300
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
+        {/* Close button for mobile */}
+        <div className="md:hidden flex justify-end mb-6">
+          <button onClick={() => setMobileSidebarOpen(false)} className="p-2 text-white">
+            <X size={24} />
+          </button>
+        </div>
+
         <div className="flex items-center gap-2 mb-10">
           <LayoutDashboard className="text-orange-600" />
           <span className="font-black uppercase italic tracking-tighter">Admin Panel</span>
@@ -78,8 +108,8 @@ export default function DashboardPage() {
         </button>
       </aside>
 
-      {/* MAIN CONTENT */}
-      <main className="flex-1 p-4 md:p-10 lg:p-12 overflow-x-hidden">
+      {/* --- MAIN CONTENT --- */}
+      <main className="flex-1 p-4 md:p-10 lg:p-12 overflow-x-hidden ml-0 md:ml-64">
         {/* Header */}
         <div className="mb-10 flex justify-between items-end">
           <div>
@@ -168,7 +198,6 @@ export default function DashboardPage() {
 }
 
 /* --- HELPER COMPONENTS --- */
-
 function SidebarLink({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) {
   return (
     <Link
@@ -182,19 +211,7 @@ function SidebarLink({ icon, label, active = false }: { icon: React.ReactNode; l
   );
 }
 
-function ProfileRow({
-  name,
-  email,
-  role,
-  id,
-  onDelete,
-}: {
-  name: string;
-  email: string;
-  role: string;
-  id: string;
-  onDelete: (id: string) => void;
-}) {
+function ProfileRow({ name, email, role, id, onDelete }: any) {
   return (
     <tr className="hover:bg-white/5 transition-colors">
       <td className="p-4">
